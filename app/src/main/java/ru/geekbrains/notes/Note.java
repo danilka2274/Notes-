@@ -3,22 +3,24 @@ package ru.geekbrains.notes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Calendar;
+
 public class Note implements Parcelable {
-    private int imageIndex;
-    private String noteName;
-    private String noteName2;
 
+    private String title;
+    private String content;
+    private Calendar creationDate;
 
-    public Note(int imageIndex, String noteName, String noteName2){
-        this.imageIndex = imageIndex;
-        this.noteName = noteName;
-        this.noteName2 = noteName2;
+    public Note(String title, String content, Calendar creationDate) {
+        this.title = title;
+        this.content = content;
+        this.creationDate = creationDate;
     }
 
     protected Note(Parcel in) {
-        imageIndex = in.readInt();
-        noteName = in.readString();
-        noteName2 = in.readString();
+        title = in.readString();
+        content = in.readString();
+        creationDate = (Calendar) in.readSerializable();
     }
 
     public static final Creator<Note> CREATOR = new Creator<Note>() {
@@ -35,10 +37,9 @@ public class Note implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(imageIndex);
-        dest.writeString(noteName);
-        dest.writeString(noteName2);
-
+        dest.writeString(title);
+        dest.writeString(content);
+        dest.writeSerializable(creationDate);
     }
 
     @Override
@@ -46,12 +47,15 @@ public class Note implements Parcelable {
         return 0;
     }
 
-    public int getImageIndex() {
-        return imageIndex;
+    public String getTitle() {
+        return title;
     }
 
-    public String getNoteName2() {
-        return noteName2;
+    public String getContent() {
+        return content;
     }
 
+    public Calendar getCreationDate() {
+        return creationDate;
+    }
 }
