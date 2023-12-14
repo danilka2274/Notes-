@@ -11,10 +11,12 @@ public class Note implements Parcelable {
     private String content;
     private Calendar creationDate;
 
+
     public Note(String title, String content, Calendar creationDate) {
         this.title = title;
         this.content = content;
         this.creationDate = creationDate;
+
     }
 
     protected Note(Parcel in) {
@@ -58,4 +60,5 @@ public class Note implements Parcelable {
     public Calendar getCreationDate() {
         return creationDate;
     }
+
 }
