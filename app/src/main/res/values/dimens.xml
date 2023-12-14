@@ -12,9 +12,11 @@
     <dimen name="textsize_of_date_of_rv_element">20sp</dimen>
     <dimen name="small_padding_of_rv_element">5dp</dimen>
     <dimen name="card_corner_radius">15dp</dimen>
-    <dimen name="card_elevation">3dp</dimen>
+    <dimen name="card_elevation">5dp</dimen>
     <dimen name="first_textView_paddingTop">25dp</dimen>
     <dimen name="first_textView_paddingStart">140dp</dimen>
+    <dimen name="second_textView_paddingStart">110dp</dimen>
+    <dimen name="second_textView_paddingBottom">25dp</dimen>
     <dimen name="nav_header_textSize_layout_height">180dp</dimen>
     <dimen name="nav_header_padding">15dp</dimen>
     <dimen name="nav_header_layout_marginBottom">12dp</dimen>

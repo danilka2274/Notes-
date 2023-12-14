@@ -1,131 +1,166 @@
 package ru.geekbrains.notes;
 
-import android.content.res.Configuration;
+import android.content.Context;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-
-import java.util.Calendar;
 import java.util.Objects;
+import static ru.geekbrains.notes.NoteFragment.CURRENT_DATA;
+import static ru.geekbrains.notes.NoteFragment.CURRENT_NOTE;
 
 public class NotesFragment extends Fragment {
 
+    private static final int MY_DEFAULT_DURATION = 1000;
     private Note currentNote;
-    private boolean isLandscape;
-    private Note[] notes;
+    private NotesSource data;
+    private Adapter adapter;
+    private RecyclerView recyclerView;
+    private Navigation navigation;
+    private Publisher publisher;
+    private boolean moveToLastPosition;
 
-    // При создании фрагмента укажем его макет
+    public static NotesFragment newInstance() {
+        return new NotesFragment();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (data == null) {
+            data = new NotesSource(getResources()).init();
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.fragment_list_of_notes, container, false);
     }
 
-    // вызывается после создания макета фрагмента, здесь мы проинициализируем список
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
         super.onViewCreated(view, savedInstanceState);
-        initList();
-        RecyclerView recyclerView = view.findViewById(R.id.notes_recycler_view);
-        initRecyclerView(recyclerView, notes);
-
+        recyclerView = view.findViewById(R.id.notes_recycler_view);
+        initRecyclerView(recyclerView, data);
+        setHasOptionsMenu(true);
     }
 
-    private void initList() {
-        notes = new Note[]{
-                new Note(getString(R.string.first_note_title), getString(R.string.first_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.second_note_title), getString(R.string.second_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.third_note_title), getString(R.string.third_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.fourth_note_title), getString(R.string.fourth_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.fifth_note_title), getString(R.string.fifth_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.sixth_note_title), getString(R.string.sixth_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.seventh_note_title), getString(R.string.seventh_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.eighth_note_title), getString(R.string.eighth_note_content), Calendar.getInstance()),
-                new Note(getString(R.string.ninth_note_title), getString(R.string.ninth_note_content), Calendar.getInstance())
-        };
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        MainActivity activity = (MainActivity) context;
+        navigation = activity.getNavigation();
+        publisher = activity.getPublisher();
     }
 
-    private void initRecyclerView(RecyclerView recyclerView, Note[] notes) {
-        recyclerView.setHasFixedSize(true); // если все элементы одинакового размера(высоты). True - recyclerView будет быстрее работать
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(linearLayoutManager);
-        Adapter adapter = new Adapter(notes);
+    @Override
+    public void onDetach() {
+        navigation = null;
+        publisher = null;
+        super.onDetach();
+    }
+
+    private void initRecyclerView(RecyclerView recyclerView, NotesSource data) {
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+
+        if (moveToLastPosition) {
+            recyclerView.smoothScrollToPosition(data.size() - 1);
+            moveToLastPosition = false;
+        }
+
+        adapter = new Adapter(data, this);
         adapter.setOnItemClickListener((position, note) -> {
-            currentNote = note;
-            showNote(currentNote);
+            navigation.addFragment(NoteFragment.newInstance(data.getNote(position)),
+                    true);
         });
-        recyclerView.setAdapter(adapter);
-        DividerItemDecoration decoration = new DividerItemDecoration(requireContext(), //декоратор
-                LinearLayoutManager.VERTICAL);
-        decoration.setDrawable(Objects.requireNonNull(ContextCompat.getDrawable(getContext(), R.drawable.decorator)));
-        recyclerView.addItemDecoration(decoration);
 
+        recyclerView.setAdapter(adapter);
+        DividerItemDecoration itemDecoration = new DividerItemDecoration
+                (requireContext(), LinearLayoutManager.VERTICAL);
+        itemDecoration.setDrawable(Objects.requireNonNull
+                (ContextCompat.getDrawable(getContext(), R.drawable.decorator)));
+        recyclerView.addItemDecoration(itemDecoration);
+
+        // Установим анимацию. А чтобы было хорошо заметно, сделаем анимацию долгой
+        DefaultItemAnimator animator = new DefaultItemAnimator();
+        animator.setAddDuration(MY_DEFAULT_DURATION);
+        animator.setRemoveDuration(MY_DEFAULT_DURATION);
+        recyclerView.setItemAnimator(animator);
     }
 
-    // Сохраним текущую позицию (вызывается перед выходом из фрагмента)
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putParcelable(ContentForNotesFragment.ARG_NOTE, currentNote);
+        outState.putParcelable(CURRENT_NOTE, currentNote);
+        outState.putParcelable(CURRENT_DATA, data);
         super.onSaveInstanceState(outState);
     }
 
-    // activity создана, можно к ней обращаться. Выполним начальные действия
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Определение, можно ли будет расположить рядом текст в другом фрагменте
-        isLandscape = getResources().getConfiguration().orientation
-                == Configuration.ORIENTATION_LANDSCAPE;
-        // Если это не первое создание, то восстановим текущую позицию
         if (savedInstanceState != null) {
-            currentNote = savedInstanceState.getParcelable(ContentForNotesFragment.ARG_NOTE);
+            data = savedInstanceState.getParcelable(CURRENT_DATA);
+            currentNote = savedInstanceState.getParcelable(CURRENT_NOTE);
         } else {
-            currentNote = notes[0];
-        }
-        if (isLandscape) {
-            showLandForNotes(currentNote);
+            currentNote = data.getNote(0);
         }
     }
 
-    private void showNote(Note currentNote) {
-        if (isLandscape) {
-            showLandForNotes(currentNote);
-        } else {
-            showPortForNotes(currentNote);
+    @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
+                                    @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = requireActivity().getMenuInflater();
+        inflater.inflate(R.menu.context_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        int position = adapter.getMenuPosition();
+        if (item.getItemId() == R.id.menu_delete_note) {
+            data.deleteNote(position);
+            adapter.notifyItemRemoved(position);
+            return true;
+
+        } else if (item.getItemId() == R.id.menu_edit_note) {
+            navigation.addFragment(NoteFragment.newInstance(data.getNote(position)), true);
+            publisher.subscribe(note1 -> {
+                data.changeNote(position, note1);
+                adapter.notifyItemChanged(position);
+            });
+            return true;
         }
+        return super.onContextItemSelected(item);
     }
 
-    private void showLandForNotes(Note currentNote) {
-        ContentForNotesFragment detail = ContentForNotesFragment.newInstance(currentNote);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.note_layout, detail);  // замена фрагмента
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.commit();
-    }
-
-    private void showPortForNotes(Note currentNote) {
-        ContentForNotesFragment fragment = ContentForNotesFragment.newInstance(currentNote);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack("list_fragment");
-        fragmentTransaction.replace(R.id.list_of_notes_fragment_container, fragment);
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.commit();
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        MenuItem addNote = menu.findItem(R.id.menu_add_note);
+        addNote.setOnMenuItemClickListener(item -> {
+            navigation.addFragment(NoteFragment.newInstance(), true);
+            publisher.subscribe(note -> {
+                data.addNote(note);
+                adapter.notifyItemInserted(data.size() - 1);
+                recyclerView.smoothScrollToPosition(data.size() - 1);
+                moveToLastPosition = true;
+            });
+            return true;
+        });
+        super.onCreateOptionsMenu(menu, inflater);
     }
 }
