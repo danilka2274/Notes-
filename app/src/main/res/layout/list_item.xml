@@ -36,4 +36,5 @@
             android:textSize="@dimen/textsize_of_date_of_rv_element"
             tools:text="@string/date_of_item" />
     </LinearLayout>
+
 </androidx.cardview.widget.CardView>

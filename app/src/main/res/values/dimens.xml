@@ -22,6 +22,8 @@
     <dimen name="nav_header_layout_marginBottom">12dp</dimen>
     <dimen name="nav_header_textSize">18sp</dimen>
     <dimen name="decorator_heith">10dp</dimen>
-
+    <dimen name="sign_in_marginTop">8dp</dimen>
+    <dimen name="skip_marginBottom">32dp</dimen>
+    <dimen name="continue_marginBottom">8dp</dimen>
 
 </resources>

@@ -8,6 +8,8 @@ public class Note implements Parcelable {
     private String title;
     private String content;
     private String creationDate;
+    private String mId;
+
 
     public static final Creator<Note> CREATOR = new Creator<Note>() {
         @Override
@@ -43,6 +45,14 @@ public class Note implements Parcelable {
         dest.writeString(title);
         dest.writeString(content);
         dest.writeString(creationDate);
+    }
+
+    public String getId() {
+        return mId;
+    }
+
+    public void setId(String id) {
+        mId = id;
     }
 
     public String getTitle() {

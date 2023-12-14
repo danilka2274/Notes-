@@ -6,9 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+
 import com.google.android.material.textfield.TextInputEditText;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -17,7 +20,6 @@ import java.util.Objects;
 public class NoteFragment extends Fragment {
 
     public static final String CURRENT_NOTE = "currentNote";
-    public static final String CURRENT_DATA = "currentData";
     private Note note;
     private Publisher publisher;
     private TextInputEditText titleText;
@@ -100,7 +102,13 @@ public class NoteFragment extends Fragment {
         if (isNewNote) {
             isNewNote = false;
         }
-        return new Note(title, content, dateOfCreation);
+        if (note != null) {
+            Note answer = new Note(title, content, dateOfCreation);
+            answer.setId(note.getId());
+            return answer;
+        } else {
+            return new Note(title, content, dateOfCreation);
+        }
     }
 
     private void initView(View view) {
