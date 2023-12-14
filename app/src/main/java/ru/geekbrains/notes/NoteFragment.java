@@ -3,15 +3,15 @@ package ru.geekbrains.notes;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
 import com.google.android.material.textfield.TextInputEditText;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -22,6 +22,7 @@ public class NoteFragment extends Fragment {
     public static final String CURRENT_NOTE = "currentNote";
     private Note note;
     private Publisher publisher;
+
     private TextInputEditText titleText;
     private TextInputEditText contentText;
     private TextView dateOfCreationText;
@@ -125,5 +126,14 @@ public class NoteFragment extends Fragment {
             titleText.setText(note.getTitle());
             contentText.setText(note.getContent());
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        MenuItem addNote = menu.findItem(R.id.menu_add_note);
+        MenuItem search = menu.findItem(R.id.menu_search);
+        addNote.setVisible(false);
+        search.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 }

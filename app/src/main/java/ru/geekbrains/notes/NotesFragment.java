@@ -1,6 +1,7 @@
 package ru.geekbrains.notes;
 
 import android.content.Context;
+
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -66,7 +67,6 @@ public class NotesFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
-
         adapter = new Adapter(this);
         recyclerView.setAdapter(adapter);
         DividerItemDecoration itemDecoration = new DividerItemDecoration
@@ -104,9 +104,22 @@ public class NotesFragment extends Fragment {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int position = adapter.getMenuPosition();
         if (item.getItemId() == R.id.menu_delete_note) {
-            data.deleteNote(position);
-            adapter.notifyItemRemoved(position);
-            return true;
+            DeleteDialogFragment deleteDlgFragment = new DeleteDialogFragment();
+            deleteDlgFragment.setCancelable(false);
+            deleteDlgFragment.setOnDialogListener(new OnClickDeleteListener() {
+                @Override
+                public void onDelete() {
+                    data.deleteNote(position);
+                    adapter.notifyItemRemoved(position);
+                    deleteDlgFragment.dismiss();
+                }
+                @Override
+                public void onCancelDelete() {
+                    deleteDlgFragment.dismiss();
+                }
+            });
+            deleteDlgFragment.show(requireActivity().getSupportFragmentManager(),
+                    "DeleteFragmentTag");
 
         } else if (item.getItemId() == R.id.menu_edit_note) {
             navigation.addFragment(NoteFragment.newInstance(data.getNote(position)), true);
@@ -116,20 +129,15 @@ public class NotesFragment extends Fragment {
             });
             return true;
         }
+
         return super.onContextItemSelected(item);
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         MenuItem search = menu.findItem(R.id.menu_search);
-        MenuItem sort = menu.findItem(R.id.menu_sort);
         MenuItem addNote = menu.findItem(R.id.menu_add_note);
-        MenuItem send = menu.findItem(R.id.menu_send);
-        MenuItem addPhoto = menu.findItem(R.id.menu_add_photo);
         search.setVisible(true);
-        sort.setVisible(true);
-        send.setVisible(false);
-        addPhoto.setVisible(false);
         addNote.setOnMenuItemClickListener(item -> {
             navigation.addFragment(NoteFragment.newInstance(), true);
             publisher.subscribe(note -> {

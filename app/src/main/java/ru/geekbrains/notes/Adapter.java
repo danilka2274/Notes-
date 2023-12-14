@@ -5,14 +5,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
@@ -62,9 +57,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private LinearLayout itemLayout;
-        private TextView titleTextView;
-        private TextView dateTextView;
+        private final LinearLayout itemLayout;
+        private final TextView titleTextView;
+        private final TextView dateTextView;
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
